@@ -1,7 +1,8 @@
 #include<iostream>
 #include<string>
 #include<fstream>
-
+#include<boost/algorithm/string.hpp>
+#include"cppjieba/Jieba.hpp" 
 namespace nm_util
 {
     class file_util
@@ -23,4 +24,29 @@ namespace nm_util
           return true;
         }
     };
+    class string_util
+    {
+        //boost;;split可以对string进行切以any_of'char'
+        static void CutString(const std::string&input,std::vector<std::string>&output,const std::string s)
+        {
+            boost::split(output,input,boost::is_any_of(s));
+        }
+    };
+      // 1. 路径常量
+      const char* JIEBA_PATH = "./dict/jieba.dict.utf8";
+      const char* HMM_PATH = "./dict/hmm_model.utf8";
+      const char* USER_PATH = "./dict/user.dict.utf8";
+      const char* IDF_PATH = "./dict/idf.utf8";
+      const char* WORDS_PATH = "./dict/stop_words.utf8";
+
+    class jieba_util
+    {
+       static cppjieba::Jieba jieba;//创建静态结巴，避免jieba被大量创建浪费内存
+     public: 
+       static void CutSearch(const std::string&doc,std::vector<std::string>&word)
+       {
+           jieba.CutForSearch(doc,word);
+       }
+    };cppjieba::Jieba jieba_util::jieba(JIEBA_PATH, HMM_PATH, USER_PATH, IDF_PATH, WORDS_PATH);
+// 顺序：主词典, HMM, 用户词典, IDF, 停用词
 }
