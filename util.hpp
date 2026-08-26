@@ -1,3 +1,4 @@
+#pragma once
 #include<iostream>
 #include<string>
 #include<fstream>
@@ -15,10 +16,12 @@ namespace nm_util
           if(!in.is_open())
           {
               std::cerr<<"file open"<<file<<"error"<<std::endl;
+              return false;
           }
           while(std::getline(in,now_file))
           {
               result+=now_file;
+              std::cout<<std::endl;
           }
           in.close();
           return true;
@@ -27,6 +30,7 @@ namespace nm_util
     class string_util
     {
         //boost;;split可以对string进行切以any_of'char'
+        public:
         static void CutString(const std::string&input,std::vector<std::string>&output,const std::string s)
         {
             boost::split(output,input,boost::is_any_of(s));

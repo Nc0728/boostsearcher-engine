@@ -2,8 +2,8 @@
 #include<vector>
 #include<string>
 #include<boost/filesystem.hpp>
-#include"util.cpp"
-const std::string src_root="data/input/";
+#include"util.hpp"
+const std::string src_root="data/input";
 const std::string output="data/output/output.txt";
 
 typedef struct data_infor
@@ -175,8 +175,10 @@ static bool parser_title(const std::string&now_file,std::string&now_title)
  }
 static bool parser_url(const std::string&file_path,std::string&url)
 {
-   std::string url_head="https://www.boost.org/doc/libs/1_84_0/doc/html/";
+   std::string url_head="https://www.boost.org/doc/libs/1_84_0/doc/html";
    std::string url_tail=file_path.substr(src_root.size());
+   //std::cout<<"url_tail:"<<url_tail<<std::endl;
+   //std::string true_utail=url_tail.substr(5);
    url=url_head+url_tail;
    return true;
 }
@@ -205,5 +207,4 @@ bool SAVE_FILE(const std::vector<data_infor>&outdata,const std::string&output)
      out.close();
     return true;
 }
-
 
