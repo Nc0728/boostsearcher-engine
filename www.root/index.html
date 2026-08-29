@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Boost 搜索引擎</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 780px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 34px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        .header h1 span {
+            color: #4a90d9;
+        }
+
+        .header p {
+            color: #888;
+            margin-top: 6px;
+            font-size: 14px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 12px;
+            background: #fff;
+            padding: 6px 6px 6px 20px;
+            border-radius: 50px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .search-box:focus-within {
+            box-shadow: 0 4px 30px rgba(74, 144, 217, 0.25);
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            padding: 12px 0;
+            background: transparent;
+            color: #333;
+        }
+
+        .search-box input::placeholder {
+            color: #bbb;
+        }
+
+        .search-box button {
+            background: #4a90d9;
+            color: #fff;
+            border: none;
+            outline: none;
+            padding: 12px 32px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .search-box button:hover {
+            background: #357abd;
+        }
+
+        .stats {
+            margin-top: 14px;
+            font-size: 14px;
+            color: #999;
+            padding-left: 6px;
+            min-height: 22px;
+        }
+
+        .stats strong {
+            color: #4a90d9;
+        }
+
+        .results {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .result-card {
+            background: #fff;
+            padding: 18px 22px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: fadeInUp 0.3s ease forwards;
+            opacity: 0;
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.10);
+        }
+
+        .result-card .title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .result-card .title a {
+            color: #1a0dab;
+            text-decoration: none;
+        }
+
+        .result-card .title a:hover {
+            text-decoration: underline;
+        }
+
+        .result-card .url {
+            font-size: 13px;
+            color: #006621;
+            margin-bottom: 4px;
+            word-break: break-all;
+        }
+
+        .result-card .desc {
+            font-size: 14px;
+            color: #545454;
+            line-height: 1.6;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #aaa;
+            padding: 60px 20px;
+            font-size: 16px;
+        }
+
+        .empty-state .icon {
+            font-size: 44px;
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #4a90d9;
+            padding: 40px 20px;
+            font-size: 16px;
+        }
+
+        .loading .spinner {
+            display: inline-block;
+            width: 26px;
+            height: 26px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #4a90d9;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .search-box {
+                flex-direction: column;
+                border-radius: 24px;
+                padding: 14px;
+            }
+
+            .search-box button {
+                width: 100%;
+                padding: 14px;
+            }
+
+            .header h1 {
+                font-size: 26px;
+            }
+
+            .result-card {
+                padding: 14px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🔍 <span>Boost</span> 搜索引擎</h1>
+        <p>搜索 Boost 库文档</p>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="输入关键词，如 filesystem" />
+        <button id="searchBtn">搜索</button>
+    </div>
+
+    <div class="stats" id="stats"></div>
+    <div class="results" id="results"></div>
+</div>
+
+<script>
+    const API_URL = 'http://218.244.141.101:8081/s';
+    const input = document.getElementById('searchInput');
+    const btn = document.getElementById('searchBtn');
+    const resultsEl = document.getElementById('results');
+    const statsEl = document.getElementById('stats');
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    async function doSearch(keyword) {
+        resultsEl.innerHTML = `
+            <div class="loading">
+                <div class="spinner"></div>
+                <div>搜索中...</div>
+            </div>
+        `;
+        statsEl.textContent = '';
+
+        try {
+            const url = `${API_URL}?word=${encodeURIComponent(keyword)}`;
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (!Array.isArray(data) || data.length === 0) {
+                resultsEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🔎</div>
+                        <div>未找到 “${escapeHtml(keyword)}” 的相关结果</div>
+                    </div>
+                `;
+                statsEl.textContent = '共 0 条结果';
+                return;
+            }
+
+            statsEl.innerHTML = `共 <strong>${data.length}</strong> 条结果`;
+
+            let html = '';
+            data.forEach((item, index) => {
+                html += `
+                    <div class="result-card" style="animation-delay: ${index * 40}ms;">
+                        <div class="title">
+                            <a href="${escapeHtml(item.url || '#')}" target="_blank" rel="noopener">
+                                ${escapeHtml(item.title || '无标题')}
+                            </a>
+                        </div>
+                        <div class="url">${escapeHtml(item.url || '')}</div>
+                        <div class="desc">${escapeHtml(item.desc || '暂无描述')}</div>
+                    </div>
+                `;
+            });
+
+            resultsEl.innerHTML = html;
+
+        } catch (error) {
+            resultsEl.innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">⚠️</div>
+                    <div>请求失败：${escapeHtml(error.message)}</div>
+                </div>
+            `;
+            statsEl.textContent = '❌ 出错';
+            console.error(error);
+        }
+    }
+
+    btn.addEventListener('click', () => {
+        const keyword = input.value.trim();
+        if (!keyword) {
+            alert('请输入关键词');
+            return;
+        }
+        doSearch(keyword);
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') btn.click();
+    });
+
+    // 如果 URL 带 ?word=xxx，自动搜索
+    (function() {
+        const params = new URLSearchParams(window.location.search);
+        const word = params.get('word');
+        if (word) {
+            input.value = word;
+            doSearch(word);
+        }
+    })();
+</script>
+
+</body>
+</html>
