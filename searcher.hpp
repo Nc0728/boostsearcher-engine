@@ -26,15 +26,18 @@ namespace ns_searcher
         std::string GetDesc(const std::string&Content,const std::string&Word)
         {
             //1.找到content对应位置
-            size_t pos=Content.find(Word);
-            if(pos==std::string::npos)
+            //size_t pos=Content.find(Word);//find区分大小写
+
+            auto iter =std::search(Content.begin(),Content.end(),Word.begin(),Word.end(),[](char x,char y){return std::tolower(x)==std::tolower(y);});
+            int pos=std::distance(Content.begin(),iter);
+            if(iter==Content.end())
             {
-                return "Zone";
+                return "Zone1";
             }
-            size_t start=0;
-            size_t end=Content.size()-1;
+            int start=0;
+            int end=Content.size()-1;
             //2.更新start end
-            if(start>=end)return "Zone";
+            if(start>=end)return "Zone2";
 
             if(pos-start>50)start=pos-50;
             if(end-pos>50)end=pos+50;
@@ -49,10 +52,12 @@ namespace ns_searcher
 	    nm_util::jieba_util::CutSearch(input,words);
 	   //找到所有对应的拉链并且存储
 	   ns_index::index::InvertedList all_index_List;
+       //提示词转小写
 	   for(auto& word:words)
            {
 	       //word->id->文档
-              ns_index::index::InvertedList*Now_Inv_index_List=S_Example->InvIndex(word);
+               boost::to_lower(word);
+               ns_index::index::InvertedList*Now_Inv_index_List=S_Example->InvIndex(word);
               if(Now_Inv_index_List==nullptr)
               {
                   continue;
@@ -73,7 +78,8 @@ namespace ns_searcher
          elem["title"]=now_FIndex->title;   
          elem["desc"]=GetDesc(now_FIndex->content,item.word);
          elem["url"]=now_FIndex->url;
-
+         //elem["id"]=item.id;
+         //elem["weight"]=item.weight;
          root.append(elem);
 
        }

@@ -1,0 +1,31 @@
+# 编译产物
+http_server
+parser
+*.o
+*.so
+*.a
+
+# 数据文件（索引等）
+data/
+dict/
+*.db
+*.idx
+
+# 第三方库
+cpp-httplib/
+cppjieba/
+
+# 测试文件
+debug
+1
+test.cc
+test
+
+# 编辑器临时文件
+*.swp
+*.swo
+*~
+
+# IDE 目录
+.vscode/
+.idea/
